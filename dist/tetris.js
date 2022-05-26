@@ -387,6 +387,7 @@ Tetris.prototype = {
 		this._initEvents();
 		this._fireShape();
 
+		this.startTimer = new Date().getTime()
 
 	},
 	//Reset game
@@ -399,6 +400,7 @@ Tetris.prototype = {
 		this.currentTime = this.startTime;
 		this.prevTime = this.startTime;
 		this.levelTime = this.startTime;
+		this.interval = consts.DEFAULT_INTERVAL;
 		clearMatrix(this.matrix);
 		views.setLevel(this.level);
 		views.setScore(this.score);
@@ -424,7 +426,7 @@ Tetris.prototype = {
 	_keydownHandler:function(e){
 		
 		var matrix = this.matrix;
-
+		console.log(e.target.id);
 		if(!e) { 
 			var e = window.event;
 		}
@@ -432,7 +434,7 @@ Tetris.prototype = {
 			return;
 		}
 
-		switch(e.keyCode){
+		switch(e.keyCode || e.target.id){
 			case 37:{this.shape.goLeft(matrix);this._draw();}
 			break;
 			
@@ -447,6 +449,18 @@ Tetris.prototype = {
 
 			case 32:{this.shape.goBottom(matrix);this._update();}
 			break;
+
+			case 'left':{this.shape.goLeft(matrix);this._draw();}
+			break;
+
+			case 'right':{this.shape.goRight(matrix);this._draw();}
+			break;
+
+			case 'rotate':{this.shape.rotate(matrix);this._draw();}
+			break;
+
+			case 'down':{this.shape.goBottom(matrix);this._draw();}
+			break;
 		}
 	},
 	// Restart game
@@ -458,6 +472,7 @@ Tetris.prototype = {
 	_initEvents:function(){
 		window.addEventListener('keydown',utils.proxy(this._keydownHandler,this),false);
 		views.btnRestart.addEventListener('click',utils.proxy(this._restartHandler,this),false);
+		document.addEventListener('click',utils.proxy(this._keydownHandler,this),false);
 	},
 
 	// Fire a new random shape
@@ -500,9 +515,17 @@ Tetris.prototype = {
 		}
 		this._draw();
 		this.isGameOver = checkGameOver(this.matrix);
-		views.setGameOver(this.isGameOver);
+		this.getTime = async function(flag){
+			let data;
+			if(flag){
+				data = new Date().getTime()
+			}
+			return data
+		}
 		if (this.isGameOver){
-			views.setFinalScore(this.score);
+			this.reset()
+			this.start()
+			this.getTime(true).then((response)=>{console.log(response - this.startTimer)})
 		}
 	},
 	// Check and update game data
@@ -1008,6 +1031,7 @@ var SIDE_WIDTH = consts.SIDE_WIDTH;
 
 /**
 	Caculate the game container size
+	SIDE_WIDTH = 120
 */
 var getContainerSize = function(maxW,maxH){
 
@@ -1018,9 +1042,18 @@ var getContainerSize = function(maxW,maxH){
 	if (dw>dh){
 		size.height = Math.min(maxH,dh);
 		size.width = Math.min(size.height /2 + SIDE_WIDTH,maxW);
-	}else{
+		size.mt = (-(size.height/2))
+		size.mb = (-(size.width/2))
+	}
+	else if (dw<dh && dw<768){
+		size.width = dw;
+		dh>699? size.height = 699: size.height = dh;
+	}
+	else{
 		size.width = Math.min(maxW,dw);
 		size.height =  Math.min(maxH,dh);
+		size.mt = (-(size.height/2))
+		size.mb = (-(size.width/2))
 	}
 	return size;
 
@@ -1033,22 +1066,36 @@ var getContainerSize = function(maxW,maxH){
 var layoutView = function(container,maxW,maxH){
 	var size = getContainerSize(maxW,maxH);
 	var st = container.style;
-	st.height = size.height + 'px';
-	st.width = size.width + 'px';
-	st.marginTop = (-(size.height/2)) + 'px';
-	st.marginLeft = (-(size.width/2)) + 'px';
 
+		st.height = size.height + 'px';
+		st.width = size.width + 'px';
+		st.marginTop = `${size.mt}` + 'px';
+		st.marginLeft = `${size.mb}` + 'px';
+	
 	//layout scene
-	scene.height = size.height;
-	scene.width = scene.height / 2;
+
+	if (scene.height<700) {
+		scene.height = size.height -120;
+		scene.width = scene.height / 2;
+	}
+
+	else {
+		scene.height = size.height;
+		scene.width = scene.height / 2;
+	}
 
 	var sideW = size.width - scene.width;
-	side.style.width = sideW+ 'px';
+	side.style.width = `${sideW - 10}px`;
 	if (sideW< SIDE_WIDTH ){
-		info.style.width = side.style.width;
+		info.style.width = `${side.style.width - 10}px`;
+		preview.width = sideW - 10;
+		preview.height = sideW - 10;
 	}
-	preview.width = 80;
-	preview.height = 80;
+	else {
+		preview.width = 80;
+		preview.height = 80;
+	}
+
 
 	gameOver.style.width = scene.width +'px';
 
