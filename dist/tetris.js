@@ -1075,7 +1075,7 @@ var layoutView = function(container,maxW,maxH){
 	//layout scene
 
 	if (scene.height<700) {
-		scene.height = size.height -120;
+		scene.height = size.height -180;
 		scene.width = scene.height / 2;
 	}
 
@@ -1096,7 +1096,9 @@ var layoutView = function(container,maxW,maxH){
 		preview.height = 80;
 	}
 
+	let leftMargin = (scene.width - 228)>10? scene.width - 228 : 10;
 
+	buttons.style.marginLeft = `${leftMargin}px`;
 	gameOver.style.width = scene.width +'px';
 
 }
