@@ -468,11 +468,23 @@ Tetris.prototype = {
 		this.reset();
 		this.start();
 	},
+	_checkTime:function(){
+		getTime = async function(){
+			let data;
+			if(flag){
+				data = new Date().getTime()
+			}
+			return data
+		}
+		getTime().then((response)=>{alert((response - this.startTimer)/1000)})
+		return false
+	},
 	// Bind game events
 	_initEvents:function(){
 		window.addEventListener('keydown',utils.proxy(this._keydownHandler,this),false);
 		views.btnRestart.addEventListener('click',utils.proxy(this._restartHandler,this),false);
 		document.addEventListener('click',utils.proxy(this._keydownHandler,this),false);
+		window.addEventListener('beforeunload',utils.proxy(this._checkTime,this));
 	},
 
 	// Fire a new random shape
@@ -515,17 +527,17 @@ Tetris.prototype = {
 		}
 		this._draw();
 		this.isGameOver = checkGameOver(this.matrix);
-		this.getTime = async function(flag){
-			let data;
-			if(flag){
-				data = new Date().getTime()
-			}
-			return data
-		}
+		// this.getTime = async function(flag){
+			// let data;
+			// if(flag){
+				// data = new Date().getTime()
+			// }
+			// return data
+		// }
 		if (this.isGameOver){
 			this.reset()
 			this.start()
-			this.getTime(true).then((response)=>{console.log(response - this.startTimer)})
+			// this.getTime(true).then((response)=>{console.log(response - this.startTimer)})
 		}
 	},
 	// Check and update game data
@@ -1042,8 +1054,9 @@ var getContainerSize = function(maxW,maxH){
 	if (dw>dh){
 		size.height = Math.min(maxH,dh);
 		size.width = Math.min(size.height /2 + SIDE_WIDTH,maxW);
-		size.mt = (-(size.height/2))
-		size.mb = (-(size.width/2))
+		size.mt = (-(size.height/2));
+		size.mb = (-(size.width/2));
+		size.forW = dw;
 	}
 	else if (dw<dh && dw<768){
 		size.width = dw;
@@ -1085,7 +1098,7 @@ var layoutView = function(container,maxW,maxH){
 	}
 
 	var sideW = size.width - scene.width;
-	side.style.width = `${sideW - 10}px`;
+	side.style.width = size.forW>1023? 'auto': `${sideW - 10}px`;
 	if (sideW< SIDE_WIDTH ){
 		info.style.width = `${side.style.width - 10}px`;
 		preview.width = sideW - 10;
