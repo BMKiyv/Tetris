@@ -294,10 +294,13 @@ var checkFullRows = function(matrix){
 */
 var removeOneRow = function(matrix,row){
 	var colCount = matrix[0].length;
+	console.log(colCount,matrix,row);
 	for(var i = row;i>=0;i--){
 		for(var j = 0;j<colCount;j++){
 			if (i>0){
-				matrix[i][j] = matrix[i-1][j];
+			matrix[i][j] = matrix[i-1][j];
+				
+				console.log('here');
 			}else{
 				matrix[i][j] = 0 ;
 			}	
@@ -426,7 +429,7 @@ Tetris.prototype = {
 	_keydownHandler:function(e){
 		
 		var matrix = this.matrix;
-		console.log(e.target.id);
+
 		if(!e) { 
 			var e = window.event;
 		}
